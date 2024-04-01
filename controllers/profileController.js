@@ -4,7 +4,7 @@ const asyncHandler = require(`express-async-handler`)
 const writeImage = require(`../functions/writeImage`)
 const fs = require('fs');
 
-const getProfileFundraisers = asyncHandler(async (req, res) => {
+const getProfilePosts = asyncHandler(async (req, res) => {
   if (!req.query.id) {
     return res.status(500).json({ message: `not logged in` })
   }
@@ -18,7 +18,7 @@ const getProfileFundraisers = asyncHandler(async (req, res) => {
 
 
 
-const deleteProfileFundraiser = asyncHandler(async (req, res) => {
+const deleteProfilePosts = asyncHandler(async (req, res) => {
   console.log(req.body)
   if(!req.body.id){
     return res.status(400).json({message: 'No ID found'})

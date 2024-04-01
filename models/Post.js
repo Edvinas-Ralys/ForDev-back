@@ -16,15 +16,19 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    type: {
+      type: String,
+      required: true,
+    },
     picture: {
       type: String,
       required: true,
     },
-    post: {
+    originalPost: {
       type: String,
       required: true,
     },
-    originalPost: {
+    editedPost: {
       type: String,
       required: false,
       default:null,

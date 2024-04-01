@@ -1,5 +1,5 @@
 const User = require(`../models/User`)
-const Fundraiser = require(`../models/Fundraiser`)
+const Post = require(`../models/Post`)
 const asyncHandler = require(`express-async-handler`)
 const bcrypt = require(`bcrypt`)
 
@@ -15,30 +15,28 @@ const getAllUsers = asyncHandler(async (req, res) => {
   res.json(users)
 })
 
-
-
 //Create new user
 //route post/users
 //Private
 const createNewUser = asyncHandler(async (req, res) => {
-  console.log(req.body)
-  const { firstName, lastName, email, password, roles, picture } = req.body
+  // console.log(req.body)
+  const { username, password, roles } = req.body
 
   //Confirm data
-  if (!firstName || !lastName || !email || !password || !roles.length) {
+  if (!username || !password || !roles.length) {
     return res.status(400).json({ message: `All fields are required` })
   }
 
   //Check for duplicates
-  const duplicate = await User.findOne({ email }).lean().exec()
+  const duplicate = await User.findOne({ username }).lean().exec()
   if (duplicate) {
-    return res.status(409).json({ message: `Duplicate email` })
+    return res.status(409).json({ message: `Username is already taken` })
   }
 
   //Hash password
   const hashedPasword = await bcrypt.hash(password, 10)
 
-  const userObject = { firstName, lastName, password: hashedPasword, roles, email, picture }
+  const userObject = { username, password: hashedPasword, roles }
 
   //Create and store new user
   const user = await User.create(userObject)
@@ -54,29 +52,35 @@ const createNewUser = asyncHandler(async (req, res) => {
 //route patch/users
 //Private
 const updateUser = asyncHandler(async (req, res) => {
-  const { id, picture, firstName } = req.body
-  if (!id || !picture) {
-    return res.status(400).json({ message: `Error, no date received` })
+  const { userId, picture, bio, updateType } = req.body
+  if (!userId || (updateType === `picture` && !picture)) {
+    return res.status(400).json({ message: `Error, no pictur received` })
+  } else if (!userId || (updateType === `bio` && !bio)) {
+    return res.status(400).json({ message: `Error, no bio to update` })
   }
 
-  const user = await User.findById(id).exec()
+  const user = await User.findById(userId).exec()
 
   if (!user) {
     return res.status(400).json({ message: `User not found` })
   }
 
   //Check duplicate
-  const duplicate = await User.findOne({ id }).lean().exec()
+  const duplicate = await User.findOne({ userId }).lean().exec()
 
-  if (duplicate && duplicate?.__id.toString() !== id) {
+  if (duplicate && duplicate?.__id.toString() !== userId) {
     return res.status(409).json({ message: `Duplicate found on edit` })
   }
 
-  user.picture = picture
+  if (updateType === `picture`) {
+    user.picture = picture
+  } else if (updateType === `bio`) {
+    user.bio = bio
+  }
 
   const updateUser = await user.save()
 
-  res.json({ message: `User ${firstName} updated` })
+  res.json({ message: `User ${updateUser.username} updated` })
 })
 
 //Delete user
