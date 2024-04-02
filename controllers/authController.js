@@ -4,21 +4,43 @@ const bcrypt = require(`bcrypt`)
 const asyncHandler = require(`express-async-handler`)
 
 const login = asyncHandler(async (req, res) => {
-  const { username, password } = req.body
-  console.log(`password `, password)
-  if (!username || !password) {
-    return res.status(400).json({ message: `All fields are required` })
+  const { email, password } = req.body
+  console.log(req.body)
+  // console.log(`password `, password)
+  if (!email || !password) {
+    return res.status(400).json({
+      message: {
+        text: `All fields are required`,
+        type: `error`,
+        location: `login`,
+        cause: `fields`,
+      },
+    })
   }
 
-  const foundUser = await User.findOne({ username }).exec()
+  const foundUser = await User.findOne({ email }).exec()
   console.log(foundUser)
   if (!foundUser) {
-    return res.status(401).json({ message: `No user found`, type:`user` })
+    return res.status(401).json({
+      message: {
+        text: `No user found`,
+        type: `error`,
+        location: `login`,
+        cause: `user`,
+      },
+    })
   }
 
   const match = await bcrypt.compare(password, foundUser.password)
   if (!match) {
-    return res.status(401).json({ message: `Invalid username or password`, type:`password` })
+    return res.status(401).json({
+      message: {
+        text: `Invalid email or password`,
+        type: `error`,
+        location: `login`,
+        cause: `invalid-input`,
+      },
+    })
   }
 
   const accessToken = jwt.sign(
@@ -31,9 +53,13 @@ const login = asyncHandler(async (req, res) => {
     { expiresIn: `100d` }
   )
 
-  const refreshToken = jwt.sign({ username: foundUser.username }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "1d",
-  })
+  const refreshToken = jwt.sign(
+    { username: foundUser.username },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: "1d",
+    }
+  )
 
   res.cookie(`jwt`, refreshToken, {
     httpOnly: true,
@@ -48,7 +74,13 @@ const login = asyncHandler(async (req, res) => {
       username: foundUser.username,
       picture: foundUser.picture,
       role: foundUser.roles[0],
-      id:foundUser.userId
+      id: foundUser.userId,
+    },
+    message: {
+      text: `Welcome, ${foundUser.username}`,
+      type: `confirm`,
+      location: `none`,
+      cause: `none`,
     },
   })
 })

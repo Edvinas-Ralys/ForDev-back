@@ -13,7 +13,7 @@ const mongoose = require(`mongoose`)
 const PORT = process.env.PORT || 3500
 
 
-console.log(process.env.NODE_ENV)
+console.log(`env NODE`, process.env.NODE_ENV)
 
 connectDB()
 
@@ -32,7 +32,7 @@ app.use(`/`, express.static(path.join(__dirname, `public`)))
 app.use(`/`, require(`./routes/root`))
 app.use(`/auth`, require(`./routes/authRoutes`))
 app.use(`/users`, require(`./routes/userRoutes`))
-// app.use(`/fundraisers`, require(`./routes/fundraiserRoutes`))
+app.use(`/posts`, require(`./routes/postRoutes`))
 // app.use(`/profile`, require(`./routes/profileRoutes`))
 
 

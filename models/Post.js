@@ -3,10 +3,9 @@ const AutoIncrement = require(`mongoose-sequence`)(mongoose)
 
 const postSchema = new mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
+    userId: {
+      type: String,
       required: true,
-      ref: `User`,
     },
     createdBy: {
       type: String,
@@ -16,19 +15,19 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    type: {
+    tags: {
+      type: Array,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: false,
+    },
+    text: {
       type: String,
       required: true,
     },
-    picture: {
-      type: String,
-      required: true,
-    },
-    originalPost: {
-      type: String,
-      required: true,
-    },
-    editedPost: {
+    editedText: {
       type: String,
       required: false,
       default:null,

@@ -17,25 +17,19 @@ const getAllPosts = asyncHandler(async (req, res) => {
 
 
 const createNewPost = asyncHandler(async (req, res) => {
-  const {type, picture, title, user, createdBy, newPost, comments } = req.body
-
-
-
-  //Confirm data
-  if (!type || !title || !newPost || !user || !createdBy ) {
+  const {tags, image, title, userId, createdBy, text } = req.body
+  console.log(req.body)
+  if (tags.lenght === 0 || !title || !text || !userId || !createdBy ) {
     return res.status(400).json({ message: `All fields are required` })
   }
-  //Check for duplicates
-  //Not needed
 
-  const formatedPicture = writeImage(picture)
+  const formatedImage = writeImage(image)
 
-  const postObject = { type, picture:formatedPicture, title, user, createdBy, newPost, comments}
+  const postObject = { tags, image:formatedImage, title, userId, createdBy, text}
 
-  const post = await Post.create(postObject)
-  if (post) {
-// console.log(post)
-    res.status(201).json(post)
+  const postResponse = await Post.create(postObject)
+  if (postResponse) {
+    res.status(201).json(postResponse)
   } else {
     res.status(400).json({ message: `Invalid data` })
   }
@@ -44,7 +38,6 @@ const createNewPost = asyncHandler(async (req, res) => {
 
 
 const updatePost = asyncHandler(async (req, res) => {
-  // console.log(req.body)
   const { editedPost, postId, userId } = req.body
   if (!editedPost || !userId) {
     res.status(400).json({ message: `Error, no data recieved` })
