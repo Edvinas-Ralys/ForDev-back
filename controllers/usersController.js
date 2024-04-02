@@ -20,17 +20,54 @@ const getAllUsers = asyncHandler(async (req, res) => {
 //Private
 const createNewUser = asyncHandler(async (req, res) => {
   // console.log(req.body)
-  const { username, password, roles } = req.body
+  const { username, password, confirmPassword, email, confirmEmail, roles } = req.body
 
   //Confirm data
-  if (!username || !password || !roles.length) {
-    return res.status(400).json({ message: `All fields are required` })
+  if (!username || !password || !confirmPassword || !email || !confirmEmail|| !roles.length) {
+    return res.status(400).json({ message: {
+      text: `All fields are required`,
+      type: `error`,
+      location: `sign-up`,
+      cause: `fields`,
+    } })
   }
 
   //Check for duplicates
-  const duplicate = await User.findOne({ username }).lean().exec()
-  if (duplicate) {
-    return res.status(409).json({ message: `Username is already taken` })
+  const duplicateUsername = await User.findOne({ username }).lean().exec()
+  if (duplicateUsername) {
+    return res.status(409).json({ message: {
+      text: `Username is already used`,
+      type: `error`,
+      location: `sign-up`,
+      cause: `username`,
+    }})
+  }
+  const duplicateEmail = await User.findOne({ email }).lean().exec()
+  if (duplicateEmail) {
+    return res.status(409).json({ message: {
+      text: `Email is already used`,
+      type: `error`,
+      location: `sign-up`,
+      cause: `email`,
+    }})
+  }
+
+  if(password !== confirmPassword){
+    return res.status(409).json({ message: {
+      text: `Password does not match`,
+      type: `error`,
+      location: `sign-up`,
+      cause: `password-match`,
+    }})
+  }
+
+  if(email !== confirmEmail){
+    return res.status(409).json({ message: {
+      text: `Email does not match`,
+      type: `error`,
+      location: `sign-up`,
+      cause: `email-match`,
+    }})
   }
 
   //Hash password
@@ -42,7 +79,12 @@ const createNewUser = asyncHandler(async (req, res) => {
   const user = await User.create(userObject)
   if (user) {
     //created
-    res.status(201).json({ message: `New user ${firstName} created` })
+    return res.status(201).json({ message: {
+      text: `User created`,
+      type: `confirm`,
+      location: null,
+      cause: null,
+    }})
   } else {
     res.status(400).json({ message: `Invalid user data recieved` })
   }
