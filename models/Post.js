@@ -4,7 +4,7 @@ const AutoIncrement = require(`mongoose-sequence`)(mongoose)
 const postSchema = new mongoose.Schema(
   {
     userId: {
-      type: String,
+      type: Number,
       required: true,
     },
     createdBy: {
