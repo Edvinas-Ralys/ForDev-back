@@ -81,12 +81,13 @@ const updatePost = asyncHandler(async (req, res) => {
     const commentObejct = {
       commentText: comment,
       commenterUsername,
-      commenterId,
+      commenterId:Number(commenterId),
       commentPosted: currentDate,
       postId,
       commentId,
     }
     commentedPost.comments.unshift(commentObejct)
+    console.log(commentObejct)
     const commentSent = await commentedPost.save()
     res.json({message:{text:`Comment posted`, type:`confirm`}, commentObejct})
     return
