@@ -88,8 +88,7 @@ const updatePost = asyncHandler(async (req, res) => {
     }
     commentedPost.comments.unshift(commentObejct)
     const commentSent = await commentedPost.save()
-    res.json(commentObejct)
-    console.log(`comment made`)
+    res.json({message:{text:`Comment posted`, type:`confirm`}, commentObejct})
     return
   }
 
@@ -120,7 +119,7 @@ const deletePost = asyncHandler(async (req, res) => {
   // }
 
   const { postId, userId, deleteType } = req.body
-  // console.log(req.body)
+  console.log(req.body)
   if (!postId || !userId || !deleteType) {
     return res.status(400).json({ message: `No ID recieved` })
   }
@@ -145,9 +144,11 @@ const deletePost = asyncHandler(async (req, res) => {
     const post = await Post.findById(postId).exec()
     if (!post) {
       return res.status(400).json({ message: `Post not found` })
-    } else if (post && post.userId !== Number(userId)) {
-      return res.status(400).json({ message: `Acces denied` })
     }
+    // else if (post && post.userId !== userId) {
+    //   console.log(post.userId, userId)
+    //   return res.status(400).json({ message: `Acces denied` })
+    // }
     const updatedComments = post.comments.filter(item => item.commentId !== req.body.commentId)
     post.comments = updatedComments
     const result = await post.save()
