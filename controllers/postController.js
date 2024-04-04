@@ -6,8 +6,8 @@ const writeImage = require(`../functions/writeImage`)
 // .limit(n) returns maximum n number of items
 
 const getAllPosts = asyncHandler(async (req, res) => {
-
-  const posts = await Posts.find().select().limit(req.query.limit).skip(req.query.skip)
+  console.log(req.body)
+  const posts = await Post.find().select().limit(req.query.limit).skip(req.query.skip)
   const totalCount = await Post.countDocuments()
   // if (posts.length === 0 || !posts) {
   //   return res.status(400).json({ message: `No posts found` })
@@ -19,6 +19,14 @@ const getAllPosts = asyncHandler(async (req, res) => {
 const createNewPost = asyncHandler(async (req, res) => {
   const {tags, image, title, userId, createdBy, text } = req.body
   console.log(req.body)
+  // if(req.body?.updateType === `comment`){
+  //   const {comment, commenterUsername, commenterId, postId} = req.body
+  //   if(!comment || !commenterUsername || !commenterId || !postId){
+  //     return res.status(400).json({ message: `All fields are required` })
+  //   }
+  //   console.log(`comment made`)
+  //   return
+  // }
   if (tags.lenght === 0 || !title || !text || !userId || !createdBy ) {
     return res.status(400).json({ message: `All fields are required` })
   }
@@ -38,6 +46,42 @@ const createNewPost = asyncHandler(async (req, res) => {
 
 
 const updatePost = asyncHandler(async (req, res) => {
+  // console.log(req.body)
+
+
+  // Sending a comment
+    if(req.body?.updateType === `comment`){
+    const {comment, commenterUsername, commenterId, postId} = req.body
+    if(!comment || !commenterUsername || !commenterId || !postId){
+      return res.status(400).json({ message: `All fields are required` })
+    }
+
+    const commentedPost = await Post.findById(postId).exec()
+    if(!commentedPost){
+      return res.status(400).json({ message: `Post not found` })
+    }
+    const date = new Date()
+    let day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate()
+    let month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : date.getMonth() + 1
+    let year = date.getFullYear()
+    let currentDate = `${day}-${month}-${year}`
+    const commentObejct = {
+      commentText:comment,
+      commenterUsername,
+      commenterId,
+      commentPosted:currentDate
+    }
+    commentedPost.comments.unshift(commentObejct)
+    const commentSent = await commentedPost.save()
+    res.json(commentObejct)
+    console.log(`comment made`)
+    return
+  }
+
+
+
+
+
   const { editedPost, postId, userId } = req.body
   if (!editedPost || !userId) {
     res.status(400).json({ message: `Error, no data recieved` })
@@ -52,9 +96,7 @@ const updatePost = asyncHandler(async (req, res) => {
   if (duplicate && duplicate?.__id.toString() !== id) {
     return res.status(400).json({ message: `Post not found` })
   }
-
   post.editedPost = editedPost
-
   const updatePost = await post.save()
   res.json(updatePost)
 })
