@@ -1,4 +1,5 @@
 const Post = require(`../models/Post`)
+const Comment = require(`../models/Comment`)
 const User = require(`../models/User`)
 const asyncHandler = require(`express-async-handler`)
 const writeImage = require(`../functions/writeImage`)
@@ -133,6 +134,9 @@ const deletePost = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: `Acces denied` })
     }
     const result = await post.deleteOne()
+    const comments = await Comment.deleteMany({postId:postId})
+    console.log(comments)
+
     fs.unlinkSync("public/images/" + post.image)
     console.log(result)
     const reply = `Post ${result.title} has been deleted`
