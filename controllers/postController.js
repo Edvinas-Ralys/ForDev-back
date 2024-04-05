@@ -114,19 +114,11 @@ const updatePost = asyncHandler(async (req, res) => {
 })
 
 const deletePost = asyncHandler(async (req, res) => {
-  // if(req.body?.deleteType === `comment`){
-  //   console.log(req.body)
-
-  //   return
-  // }
-
   const { postId, userId, deleteType } = req.body
-  console.log(req.body)
+  // console.log(req.body)
   if (!postId || !userId || !deleteType) {
     return res.status(400).json({ message: `No ID recieved` })
   }
-
-  if (deleteType === `post`) {
     const post = await Post.findById(postId).exec()
     if (!post) {
       return res.status(400).json({ message: `Post not found` })
@@ -135,7 +127,6 @@ const deletePost = asyncHandler(async (req, res) => {
     }
     const result = await post.deleteOne()
     const comments = await Comment.deleteMany({postId:postId})
-    console.log(comments)
 
     fs.unlinkSync("public/images/" + post.image)
     console.log(result)
@@ -143,22 +134,7 @@ const deletePost = asyncHandler(async (req, res) => {
     res.json(reply)
 
 
-  } else if (deleteType === `comment`) {
-    const { commentId, userId } = req.body
-    console.log(req.body)
-    const post = await Post.findById(postId).exec()
-    if (!post) {
-      return res.status(400).json({ message: `Post not found` })
-    }
-    // else if (post && post.userId !== userId) {
-    //   console.log(post.userId, userId)
-    //   return res.status(400).json({ message: `Acces denied` })
-    // }
-    const updatedComments = post.comments.filter(item => item.commentId !== req.body.commentId)
-    post.comments = updatedComments
-    const result = await post.save()
-    return res.json({ message: { text: `Comment deleted`, type: `confirm` } })
-  }
+
 })
 
 module.exports = { getAllPosts, createNewPost, updatePost, deletePost }
