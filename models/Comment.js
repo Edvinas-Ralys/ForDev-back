@@ -11,6 +11,11 @@ const commentScheme = new mongoose.Schema(
       type: String,
       required: true,
     },
+    postTitle: {
+      type: String,
+      required: true,
+    },
+
     commenterUsername: {
       type: String,
       required: true,
@@ -27,10 +32,10 @@ const commentScheme = new mongoose.Schema(
       type: String,
       require: true,
     },
-    originalComment:{
-        type:String,
-        required:false
-    }
+    originalComment: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,

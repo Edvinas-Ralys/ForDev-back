@@ -15,8 +15,8 @@ const getComments = asyncHandler(async (req, res) => {
 
 //!CREATE
 const createComment = asyncHandler(async (req, res) => {
-  const { commentContent, postId, commenterUsername, commenterId, id } = req.body
-  if (!commentContent || !postId || !commenterUsername || !commenterId || !id) {
+  const { commentContent, postId, commenterUsername, commenterId, id, postTitle } = req.body
+  if (!commentContent || !postId || !commenterUsername || !commenterId || !id || !postTitle) {
     return res.status(400).json({ message: { text: `All fields are rquired`, type: `error` } })
   }
   const date = new Date()
@@ -32,6 +32,7 @@ const createComment = asyncHandler(async (req, res) => {
     commenterId,
     id,
     created: currentDate,
+    postTitle
   }
   const response = await Comment.create(commentObject)
   console.log(response)

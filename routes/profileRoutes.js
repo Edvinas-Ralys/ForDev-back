@@ -5,6 +5,7 @@ const profileController = require (`../controllers/profileController`)
 
 router.route(`/`)
 .get(verifyJWT, profileController.getProfileFundraisers)
+.patch(verifyJWT, profileController.update)
 .delete(verifyJWT, profileController.deleteProfileFundraiser)
 
 

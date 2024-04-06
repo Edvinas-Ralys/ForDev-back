@@ -30,6 +30,14 @@ const userSchema = new mongoose.Schema({
     type: Array,
     default:null
   },
+  bio:{
+    type:String,
+    required:false
+  },
+  interests:{
+    type:Array,
+    required:false
+  },
   roles: [
     {
       type: String,
