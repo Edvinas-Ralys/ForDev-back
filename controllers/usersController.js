@@ -3,6 +3,8 @@ const Post = require(`../models/Post`)
 const Comment = require(`../models/Comment`)
 const asyncHandler = require(`express-async-handler`)
 const bcrypt = require(`bcrypt`)
+const writeImage = require(`../functions/writeImage`)
+const fs = require("fs")
 
 //Get all users
 //route get/users
@@ -121,16 +123,16 @@ const createNewUser = asyncHandler(async (req, res) => {
 //route patch/users
 //Private
 const updateUser = asyncHandler(async (req, res) => {
-  const { userId, image, bio, interest, updateType } = req.body
+  const { userId, picture, bio, interest, updateType } = req.body
   console.log(req.body)
   if (!userId || !updateType) {
     return res.status(400).json({ message: { text: `Access denied`, type: `error` } })
   } else if (updateType === `bio` && !bio) {
     return res.status(400).json({ message: { text: `Can't update empty string`, type: `error` } })
   } else if (updateType === `bio` && bio.length > 200){
-    return res.status(400).json({ message: { text: `Bio too long. Maximum 200 characters`, type: `error` } })
-  } else if (updateType === `image` && !image) {
-    return res.status(400).json({ message: { text: `No image`, type: `error` } })
+    return res.status(400).json({ message: { text: `Text too long. Maximum 200 characters`, type: `error` } })
+  } else if (updateType === `picture` && !picture) {
+    return res.status(400).json({ message: { text: `No picture found`, type: `error` } })
   } else if (updateType === `interest` && (!interest || interest.length === 0)) {
     return res.status(400).json({ message: { text: `No interests selected`, type: `error` } })
   }
@@ -138,21 +140,40 @@ const updateUser = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(400).json({ message: { text: `User not found`, type: `error` } })
   }
-  console.log(user)
+  // console.log(user)
 
   //Check duplicate
   const duplicate = await User.findOne({ userId:Number(userId) }).lean().exec()
 
 
   if (updateType === `picture`) {
-    user.picture = picture
+    const base64Str = picture.split(`base64,`)[1]
+    const decode = atob(base64Str)
+    if (decode.length > 4000000) {
+      return res.status(400).json({
+        message: {
+          text: `Image size too big. Maximum file size 4mb`,
+          type: `error`,
+          cause: `image`,
+        },
+      })
+    } else if(req.body.oldPicture !== null){
+      fs.unlinkSync("public/images/" + user.picture)
+      const formatedPicture = writeImage(picture)
+      user.picture = formatedPicture
+    } else {
+      const formatedPicture = writeImage(picture)
+      user.picture = formatedPicture
+    }
   } else if (updateType === `bio`) {
     user.bio = bio
   }
 
   const updateUser = await user.save()
-
-  res.json({ message: { text: `Bio update`, type: `confirm` } })
+  if(req.body.updateType === `picture`){
+    return res.json({ message: { text: `${req.body.updateType} updated`, type: `confirm` }, newPicture:updateUser.picture })
+  }
+  res.json({ message: { text: `${req.body.updateType} updated`, type: `confirm` } })
 })
 
 //Delete user
