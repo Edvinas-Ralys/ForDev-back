@@ -91,6 +91,7 @@ const updatePost = asyncHandler(async (req, res) => {
 //!Delete post
 //!Finished
 const deletePost = asyncHandler(async (req, res) => {
+  console.log(req.body)
   const { postId, userId } = req.body
   if (!postId || !userId) {
     return res.status(400).json({ message: {text: `No ID recieved`, type:`error`} })

@@ -167,11 +167,16 @@ const updateUser = asyncHandler(async (req, res) => {
     }
   } else if (updateType === `bio`) {
     user.bio = bio
+  } else if(updateType === `picture-remove`){
+    fs.unlinkSync("public/images/" + user.picture)
+    user.picture = null
   }
 
   const updateUser = await user.save()
   if(req.body.updateType === `picture`){
     return res.json({ message: { text: `${req.body.updateType} updated`, type: `confirm` }, newPicture:updateUser.picture })
+  } else if (req.body.updateType === `picture-remove`){
+    return res.json({ message: { text: `Picture removed`, type: `confirm` }, newPicture:null })
   }
   res.json({ message: { text: `${req.body.updateType} updated`, type: `confirm` } })
 })
