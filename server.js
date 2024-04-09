@@ -34,7 +34,7 @@ app.use(`/auth`, require(`./routes/authRoutes`))
 app.use(`/user`, require(`./routes/userRoutes`))
 app.use(`/posts`, require(`./routes/postRoutes`))
 app.use(`/comment`, require(`./routes/commentRoutes`))
-// app.use(`/profile`, require(`./routes/profileRoutes`))
+app.use(`/search`, require(`./routes/searchRoutes`))
 
 
 
