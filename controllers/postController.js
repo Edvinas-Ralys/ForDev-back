@@ -6,12 +6,17 @@ const writeImage = require(`../functions/writeImage`)
 const fs = require("fs")
 // .limit(n) returns maximum n number of items
 
-
 //! Get all posts
 const getAllPosts = asyncHandler(async (req, res) => {
-  console.log(req.body)
+  console.log(req.query)
   const posts = await Post.find().select().limit(req.query.limit).skip(req.query.skip)
   const totalCount = await Post.countDocuments()
+  console.log(totalCount < req.query.skip + 7)
+  if (totalCount < req.query.skip + 7) {
+    console.log(totalCount - (totalCount - req.query.skip))
+    const lastPosts = await Post.find().skip(totalCount - req.query.skip)
+    return res.json({ posts: lastPosts, totalCount })
+  }
   res.json({ posts, totalCount })
 })
 
@@ -57,13 +62,11 @@ const createNewPost = asyncHandler(async (req, res) => {
   const postObject = { tags, image: formatedImage, title, userId, createdBy, text }
   const postResponse = await Post.create(postObject)
   if (postResponse) {
-    res.status(201).json({postResponse, message:{text:`Post created`, type:`confirm`}})
+    res.status(201).json({ postResponse, message: { text: `Post created`, type: `confirm` } })
   } else {
-    res.status(400).json({ message:{text:`Invalid data`, type:`error`} })
+    res.status(400).json({ message: { text: `Invalid data`, type: `error` } })
   }
 })
-
-
 
 //! Update post
 //After profile
@@ -87,29 +90,25 @@ const updatePost = asyncHandler(async (req, res) => {
   res.json(updatePost)
 })
 
-
 //!Delete post
 //!Finished
 const deletePost = asyncHandler(async (req, res) => {
   console.log(req.body)
   const { postId, userId } = req.body
   if (!postId || !userId) {
-    return res.status(400).json({ message: {text: `No ID recieved`, type:`error`} })
+    return res.status(400).json({ message: { text: `No ID recieved`, type: `error` } })
   }
-    const post = await Post.findById(postId).exec()
-    if (!post) {
-      return res.status(400).json({ message: {text:`Post not found`, type:`error`} })
-    } else if (post && post.userId !== userId) {
-      return res.status(400).json({ message: {text: `Access denied`, type:`error`} })
-    }
-    const result = await post.deleteOne()
-    const comments = await Comment.deleteMany({postId:postId})
+  const post = await Post.findById(postId).exec()
+  if (!post) {
+    return res.status(400).json({ message: { text: `Post not found`, type: `error` } })
+  } else if (post && post.userId !== userId) {
+    return res.status(400).json({ message: { text: `Access denied`, type: `error` } })
+  }
+  const result = await post.deleteOne()
+  const comments = await Comment.deleteMany({ postId: postId })
 
-    post.image && fs.unlinkSync("public/images/" + post.image)
-    res.json({message:{text:`Post deleted`, type:`confirm`}})
-
-
-
+  post.image && fs.unlinkSync("public/images/" + post.image)
+  res.json({ message: { text: `Post deleted`, type: `confirm` } })
 })
 
 module.exports = { getAllPosts, createNewPost, updatePost, deletePost }
