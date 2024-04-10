@@ -71,23 +71,73 @@ const createNewPost = asyncHandler(async (req, res) => {
 //! Update post
 //After profile
 const updatePost = asyncHandler(async (req, res) => {
-  const { editedPost, postId, userId } = req.body
-  if (!editedPost || !userId) {
-    res.status(400).json({ message: `Error, no data recieved` })
+  const { postId, userId, title, tags, text, image } = req.body
+  if (!postId || !userId) {
+    res.status(400).json({ message: {text:`Error, no data recieved`, type:`error`} })
   }
 
-  const post = await Post.findById(postId).exec()
+  const post = await Post.findOne({postId}).exec()
   if (!post) {
-    return res.status(400).json({ message: `Post not found` })
+    return res.status(400).json({ message: {text:`Post not found`, type:`error`} })
+  }
+  console.log(Number(post.userId), Number(req.body.userId))
+  if(post.userId !== Number(req.body.userId)){
+    return res.status(400).json({message:{text:`Access denied`, type:`error`}})
   }
 
-  const duplicate = await Post.findOne({ postId }).lean().exec()
-  if (duplicate && duplicate?.__id.toString() !== id) {
-    return res.status(400).json({ message: `Post not found` })
+
+if(title){
+  if(title.length < 10){
+    return res
+    .status(400)
+    .json({ message: { text: `Title too short`, type: `error`, cause: `title` } })
+  } else if (title.length > 100){
+    return res
+      .status(400)
+      .json({ message: { text: `Title too long`, type: `error`, cause: `title` } })
+  } else {
+    post.title = title
   }
-  post.editedPost = editedPost
+}
+
+if(tags){
+  if(tags.length === 0){
+    return res.status(400)
+    .json({ message: { text: `Need to select atleast one tag`, type: `error`, cause: `tags` } })
+  } else {
+    post.tags = tags
+  }
+}
+
+if(text){
+  if(text.length < 100){
+    return res
+      .status(400)
+      .json({ message: { text: `Post too short`, type: `error`, cause: `text` } })
+  } else if (text.length > 10000){
+    return res
+      .status(400)
+      .json({ message: { text: `Post too long`, type: `error`, cause: `text` } })
+  } else {
+    post.text = text
+  }
+}
+
+if(image){
+  if(image.includes(`data`)){
+    fs.unlinkSync("public/images/" + post.image)
+    const formatedImage = writeImage(req.body.image)
+    post.image = formatedImage
+  }
+} else {
+  fs.unlinkSync("public/images/" + post.image)
+  post.image = null
+}
+
+post.editedText = true
+
   const updatePost = await post.save()
-  res.json(updatePost)
+  res.json({post:updatePost, message:{text:`Post updated`, type:`confirm`}})
 })
 
 //!Delete post

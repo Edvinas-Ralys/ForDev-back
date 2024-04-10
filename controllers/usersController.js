@@ -15,10 +15,14 @@ const getUser = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: { text: `No user found`, type: `error` } })
   }
   const userDetails = await User.findOne({ userId }).select(`-password`).exec()
-  const userPosts = await Post.find({ userId }).select(`-text -createdBy -userId`).exec()
+  const userPosts = await Post.find({ userId }).select(`-createdBy -userId`).exec()
   const userComments = await Comment.find({ commenterId: userId })
     .select(`-commenterId -commenterUsername`)
     .exec()
+
+    if(!userDetails || !userPosts || !userComments){
+      return res.status(400).json({message:{text:`No user found`, type:`error`}})
+    }
 
   const userObject = {
     userComments,
@@ -27,12 +31,6 @@ const getUser = asyncHandler(async (req, res) => {
   }
   res.status(200).json(userObject)
 
-  // const users = await User.find().select(`-password`).lean()
-  // if (users.lenght === 0 || !users) {
-  //   return res.status(400).json({ message: `No users found` })
-  // }
-
-  // res.json(users)
 })
 
 //Create new user
