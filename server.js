@@ -13,7 +13,6 @@ const mongoose = require(`mongoose`)
 const PORT = process.env.PORT || 3500
 
 
-console.log(`env NODE`, process.env.NODE_ENV)
 
 connectDB()
 

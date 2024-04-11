@@ -5,8 +5,6 @@ const asyncHandler = require(`express-async-handler`)
 
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body
-  console.log(req.body)
-  // console.log(`password `, password)
   if (!email || !password) {
     return res.status(400).json({
       message: {
@@ -19,7 +17,6 @@ const login = asyncHandler(async (req, res) => {
   }
 
   const foundUser = await User.findOne({ email }).exec()
-  console.log(foundUser)
   if (!foundUser) {
     return res.status(401).json({
       message: {

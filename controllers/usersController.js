@@ -122,7 +122,6 @@ const createNewUser = asyncHandler(async (req, res) => {
 //Private
 const updateUser = asyncHandler(async (req, res) => {
   const { userId, picture, bio, interest, updateType } = req.body
-  console.log(req.body)
   if (!userId || !updateType) {
     return res.status(400).json({ message: { text: `Access denied`, type: `error` } })
   } else if (updateType === `bio` && !bio) {
@@ -138,7 +137,6 @@ const updateUser = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(400).json({ message: { text: `User not found`, type: `error` } })
   }
-  // console.log(user)
 
   //Check duplicate
   const duplicate = await User.findOne({ userId:Number(userId) }).lean().exec()
@@ -168,6 +166,8 @@ const updateUser = asyncHandler(async (req, res) => {
   } else if(updateType === `picture-remove`){
     fs.unlinkSync("public/images/" + user.picture)
     user.picture = null
+  } else if (updateType === `remove-bio`){
+    user.bio = null
   }
 
   const updateUser = await user.save()

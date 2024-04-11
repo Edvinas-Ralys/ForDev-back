@@ -2,7 +2,6 @@ const asyncHandler = require(`express-async-handler`)
 const Post = require(`../models/Post`)
 
 const getSearchResults = asyncHandler(async (req, res) => {
-  console.log(req.query)
   const foundPosts = await Post.find()
   if (!req.query.title && (!req.query.tags || req.query.tags.length === 0)) {
     return res

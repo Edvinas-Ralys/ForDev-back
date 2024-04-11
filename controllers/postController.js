@@ -8,16 +8,15 @@ const fs = require("fs")
 
 //! Get all posts
 const getAllPosts = asyncHandler(async (req, res) => {
-  console.log(req.query)
-  const posts = await Post.find().select().limit(req.query.limit).skip(req.query.skip)
   const totalCount = await Post.countDocuments()
-  console.log(totalCount < req.query.skip + 7)
   if (totalCount < req.query.skip + 7) {
-    console.log(totalCount - (totalCount - req.query.skip))
-    const lastPosts = await Post.find().skip(totalCount - req.query.skip)
+    const lastPosts = await Post.find().select().limit(req.query.limit).skip(totalCount - req.query.limit)
     return res.json({ posts: lastPosts, totalCount })
+  } else {
+    const posts = await Post.find().select().limit(req.query.limit).skip(req.query.skip)
+    return  res.json({ posts, totalCount })
   }
-  res.json({ posts, totalCount })
+
 })
 
 //!Create Post
@@ -80,7 +79,6 @@ const updatePost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(400).json({ message: {text:`Post not found`, type:`error`} })
   }
-  console.log(Number(post.userId), Number(req.body.userId))
   if(post.userId !== Number(req.body.userId)){
     return res.status(400).json({message:{text:`Access denied`, type:`error`}})
   }
@@ -125,7 +123,9 @@ if(text){
 
 if(image){
   if(image.includes(`data`)){
-    fs.unlinkSync("public/images/" + post.image)
+    if(post.image){
+      fs.unlinkSync("public/images/" + post.image)
+    }
     const formatedImage = writeImage(req.body.image)
     post.image = formatedImage
   }
@@ -143,7 +143,6 @@ post.editedText = true
 //!Delete post
 //!Finished
 const deletePost = asyncHandler(async (req, res) => {
-  console.log(req.body)
   const { postId, userId } = req.body
   if (!postId || !userId) {
     return res.status(400).json({ message: { text: `No ID recieved`, type: `error` } })

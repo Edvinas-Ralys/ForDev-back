@@ -35,7 +35,6 @@ const createComment = asyncHandler(async (req, res) => {
     postTitle
   }
   const response = await Comment.create(commentObject)
-  console.log(response)
   if (response) {
     res.status(201).json({
       commentObject: { ...commentObject, createdAt: response.createdAt },
@@ -70,7 +69,6 @@ const updateComment = asyncHandler(async (req, res) => {
   }
 
   const comment = await Comment.findOne({ id: commentId }).exec()
-  console.log(comment)
   if (!comment) {
     return res.status(400).json({ message: `No comment found`, type: `error` })
   } else if ((comment && comment.commenterId !== userId) || comment.postId !== postId) {
